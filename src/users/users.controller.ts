@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -8,8 +9,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  register(@Body() body: any) {
-    return body;
+  async register(@Body() body: any) {
+    if (body.password !== body.password_confirm) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    return this.usersService.save({
+      first_name: body.first_name,
+      last_name: body.last_name,
+      email: body.email,
+      password: await bcrypt.hash(body.password, 12),
+    });
   }
 
   /*
