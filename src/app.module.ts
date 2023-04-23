@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -13,7 +12,7 @@ import { UsersModule } from './users/users.module';
       type: 'sqlite',
       database: 'database',
       entities: ['dist/**/*.entity{.ts,.js}'], // This generates the DB tables
-      synchronize: true,    // This synchronizes the DB
+      synchronize: true, // This synchronizes the DB
     }),
     UsersModule,
   ],
