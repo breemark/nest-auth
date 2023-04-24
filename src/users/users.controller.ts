@@ -7,15 +7,21 @@ import {
   Param,
   Delete,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 
 @Controller('api')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('register')
   async register(@Body() body: any) {
@@ -35,6 +41,7 @@ export class UsersController {
   async login(
     @Body('email') email: string,
     @Body('password') password: string,
+    @Res({ passthrough: true }) response: Response,
   ) {
     const user = await this.usersService.findOne({ where: { email } });
 
@@ -45,7 +52,26 @@ export class UsersController {
     if (!(await bcrypt.compare(password, user.password))) {
       throw new BadRequestException('Invalid Credentials');
     }
-    return user;
+
+    const accessToken = await this.jwtService.signAsync(
+      {
+        id: user.id,
+      },
+      { expiresIn: '30s' },
+    );
+
+    const refreshToken = await this.jwtService.signAsync({
+      id: user.id,
+    });
+
+    response.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+    });
+
+    return {
+      token: accessToken,
+    };
   }
 
   /*
