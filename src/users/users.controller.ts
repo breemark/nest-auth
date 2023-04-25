@@ -8,13 +8,15 @@ import {
   Delete,
   BadRequestException,
   Res,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Controller()
 export class UsersController {
@@ -73,5 +75,24 @@ export class UsersController {
     return {
       token: accessToken,
     };
+  }
+
+  @Get('user')
+  async user(
+    @Req() request: Request
+  ) {
+    try {
+      const accessToken = request.headers.authorization.replace('Bearer', '');
+
+      const { id } = await this.jwtService.verifyAsync(accessToken);
+
+      const {password, ...data} = await this.usersService.findOne({id});
+
+      return data;
+
+    } catch (error) {
+
+      throw new UnauthorizedException();
+    }
   }
 }
