@@ -16,7 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 
-@Controller('api')
+@Controller()
 export class UsersController {
   constructor(
     private usersService: UsersService,
@@ -64,6 +64,7 @@ export class UsersController {
       id: user.id,
     });
 
+    response.status(200);
     response.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
@@ -73,32 +74,4 @@ export class UsersController {
       token: accessToken,
     };
   }
-
-  /*
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
-  }
-
-  */
 }
