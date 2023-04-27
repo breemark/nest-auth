@@ -78,20 +78,16 @@ export class UsersController {
   }
 
   @Get('user')
-  async user(
-    @Req() request: Request
-  ) {
+  async user(@Req() request: Request) {
     try {
       const accessToken = request.headers.authorization.replace('Bearer', '');
 
       const { id } = await this.jwtService.verifyAsync(accessToken);
 
-      const {password, ...data} = await this.usersService.findOne({id});
+      const { password, ...data } = await this.usersService.findOne({ id });
 
       return data;
-
     } catch (error) {
-
       throw new UnauthorizedException();
     }
   }
@@ -99,22 +95,33 @@ export class UsersController {
   @Post('refresh')
   async refresh(
     @Req() request: Request,
-    @Res({passthrough: true}) response: Response
+    @Res({ passthrough: true }) response: Response,
   ) {
-      try {
-        const refreshToken = request.cookies['refresh_token'];
-        
-        const {id} = await this.jwtService.verifyAsync(refreshToken);
+    try {
+      const refreshToken = request.cookies['refresh_token'];
 
-        const token = await this.jwtService.signAsync({id}, {expiresIn: '30s'});
+      const { id } = await this.jwtService.verifyAsync(refreshToken);
 
-        response.status(200);
-        
-        return {
-          token
-        };
-      } catch (e) {
-        throw new UnauthorizedException();
-      }
+      const token = await this.jwtService.signAsync(
+        { id },
+        { expiresIn: '30s' },
+      );
+
+      response.status(200);
+
+      return {
+        token,
+      };
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie('refresh_token');
+    return {
+      message: 'success',
+    };
   }
 }
