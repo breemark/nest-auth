@@ -17,12 +17,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import { TokenService } from './token.service';
+import { MoreThanOrEqual } from 'typeorm';
 
 @Controller()
 export class UsersController {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private tokenService: TokenService,
   ) {}
 
   @Post('register')
@@ -66,6 +69,15 @@ export class UsersController {
       id: user.id,
     });
 
+    const expired_at = new Date();
+    expired_at.setDate(expired_at.getDate() + 7);
+
+    await this.tokenService.save({
+      user_id: user.id,
+      token: refreshToken,
+      expired_at,
+    });
+
     response.status(200);
     response.cookie('refresh_token', refreshToken, {
       httpOnly: true,
@@ -102,15 +114,24 @@ export class UsersController {
 
       const { id } = await this.jwtService.verifyAsync(refreshToken);
 
-      const token = await this.jwtService.signAsync(
+      const tokenEntity = await this.tokenService.findOneBy({
+        user_id: id,
+        expired_at: MoreThanOrEqual(new Date()),
+      });
+
+      if (!tokenEntity) {
+        throw new UnauthorizedException();
+      }
+
+      const accessToken = await this.jwtService.signAsync(
         { id },
-        { expiresIn: '30s' },
+        { expiresIn: '10d' },
       );
 
       response.status(200);
 
       return {
-        token,
+        token: accessToken,
       };
     } catch (e) {
       throw new UnauthorizedException();
@@ -118,8 +139,14 @@ export class UsersController {
   }
 
   @Post('logout')
-  async logout(@Res({ passthrough: true }) response: Response) {
+  async logout(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.tokenService.delete({ token: request.cookies['refresh_token'] });
+
     response.clearCookie('refresh_token');
+
     return {
       message: 'success',
     };
