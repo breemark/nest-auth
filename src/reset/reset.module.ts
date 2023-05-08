@@ -4,6 +4,7 @@ import { ResetService } from './reset.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Reset } from './reset.entity';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
@@ -11,14 +12,15 @@ import { MailerModule } from '@nestjs-modules/mailer';
     MailerModule.forRoot({
       transport: {
         host: '0.0.0.0',
-        port: 1025
+        port: 1025,
       },
       defaults: {
-        from: 'from@example.com'
-      }
+        from: 'from@example.com',
+      },
     }),
+    UsersModule
   ],
   controllers: [ResetController],
-  providers: [ResetService]
+  providers: [ResetService],
 })
 export class ResetModule {}

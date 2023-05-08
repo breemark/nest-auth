@@ -20,6 +20,10 @@ export class UsersService {
     return this.userRepository.findOne(options);
   }
 
+  async update(id: number, options) {
+    return this.userRepository.update(id, options);
+  }
+
   /*
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
@@ -36,9 +40,6 @@ export class UsersService {
   }
   */
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
 
   remove(id: number) {
     return `This action removes a #${id} user`;
