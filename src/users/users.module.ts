@@ -17,6 +17,6 @@ import { TokenService } from './token.service';
   ],
   controllers: [UsersController],
   providers: [UsersService, TokenService],
-  exports: [UsersService]
+  exports: [UsersService],
 })
 export class UsersModule {}

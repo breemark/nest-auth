@@ -18,7 +18,7 @@ import { UsersModule } from 'src/users/users.module';
         from: 'from@example.com',
       },
     }),
-    UsersModule
+    UsersModule,
   ],
   controllers: [ResetController],
   providers: [ResetService],

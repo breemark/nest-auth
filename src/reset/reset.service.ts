@@ -17,5 +17,4 @@ export class ResetService {
   async findOne(options) {
     return this.resetRepository.findOne(options);
   }
-  
 }
